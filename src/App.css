@@ -150,4 +150,7 @@ form button:hover, #code:hover {
     opacity: 0.8;
 }
 
+.toggle-password {
+    width: 20px;
+}
 
