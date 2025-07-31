@@ -69,7 +69,7 @@ const Register = () => {
 
       // Allt gick bra – visa meddelande och skicka till login
       setSuccess("Registrering lyckades! Skickar dig till inloggning...");
-      setTimeout(() => navigate("/login"), 2000); // Redirect efter 2 sek
+      setTimeout(() => navigate("/"), 2000); // Redirect efter 2 sek
     } catch (err) {
       setError("Något gick fel. Försök igen.");
       console.error("Registrering fel:", err.message);
