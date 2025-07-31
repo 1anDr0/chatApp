@@ -31,7 +31,7 @@ const Register = () => {
         credentials: "include",
       });
 
-      const csrfData = await csrfData.json();
+      const csrfData = await csrfRes.json();
       const csrfToken = csrfData.csrfToken;
 
       const res = await fetch(
