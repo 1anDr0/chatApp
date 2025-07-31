@@ -45,7 +45,13 @@ const Register = () => {
             "Content-Type": "application/json",
             "X-CSRF-TOKEN": csrfToken,
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            username: formData.username,
+            password: formData.password,
+            email: formData.email,
+            avatar: formData.avatar,
+            csrfToken: csrfToken, // ← VIKTIGT!
+          }),
           credentials: "include",
         }
       );
