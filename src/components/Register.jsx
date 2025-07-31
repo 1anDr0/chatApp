@@ -47,6 +47,8 @@ const Register = () => {
         }
       );
 
+      const data = await res.json();
+
       if (!res.ok) {
         if (data.message?.includes("Username or email already exists")) {
           setError("Användarnamn eller e-post används redan.");
