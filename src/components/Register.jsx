@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -18,6 +17,54 @@ const Register = () => {
     console.log(formData);
   };
 
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    try {
+      const csrfRes = await fetch("https://chatify-api.up.railway.app/csrf", {
+        method: "patch",
+        credentials: "include",
+      });
+
+      const csrfData = await csrfData.json();
+      const csrfToken = csrfData.csrfToken;
+
+      const res = await fetch(
+        "https://chatify-api.up.railway.app/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": csrfToken,
+          },
+          body: JSON.stringify(formData),
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) {
+        if (data.message?.includes("Username or email already exists")) {
+          setError("Användarnamn eller e-post används redan.");
+        } else {
+          setError(data.message || "Registreringen misslyckades.");
+        }
+        return;
+      }
+
+      // Allt gick bra – visa meddelande och skicka till login
+      setSuccess("Registrering lyckades! Skickar dig till inloggning...");
+      setTimeout(() => navigate("/login"), 2000); // Redirect efter 2 sek
+    } catch (err) {
+      setError("Något gick fel. Försök igen.");
+      console.error("Registrering fel:", err.message);
+    }
+  };
+
   return (
     <div>
       <nav>
@@ -25,7 +72,7 @@ const Register = () => {
       </nav>
       <div className="form-wrapper">
         <h2>Sign Up</h2>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="form-control">
             <input
               type="text"
@@ -77,6 +124,13 @@ const Register = () => {
             />
             <label>Email</label>
           </div>
+
+          {/* Visar felmeddelande */}
+          {error && <p className="error">{error}</p>}
+
+          {/* Visar bekräftelse */}
+          {success && <p className="success">{success}</p>}
+
           <button>Sign Up To Buzz</button>
           <p>Already have an account?</p>
           <button

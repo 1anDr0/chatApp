@@ -150,7 +150,12 @@ form button:hover, #code:hover {
     opacity: 0.8;
 }
 
-.toggle-password {
-    width: 20px;
+.error {
+  color: red;
+  margin-top: 10px;
 }
 
+.success {
+  color: green;
+  margin-top: 10px;
+}
