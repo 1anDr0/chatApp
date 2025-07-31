@@ -7,9 +7,8 @@ const Register = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    firstname: "",
-    lastname: "",
     email: "",
+    avatar: "https://i.pravatar.cc/150",
   });
 
   const handleChange = (e) => {
@@ -33,6 +32,10 @@ const Register = () => {
 
       const csrfData = await csrfRes.json();
       const csrfToken = csrfData.csrfToken;
+
+      console.log("🟢 Registrerar användare med:");
+      console.log("CSRF-token:", csrfToken);
+      console.log("FormData:", formData);
 
       const res = await fetch(
         "https://chatify-api.up.railway.app/auth/register",
@@ -96,26 +99,7 @@ const Register = () => {
             />
             <label>Password</label>
           </div>
-          <div className="form-control">
-            <input
-              type="text"
-              name="firstname"
-              value={formData.firstname}
-              onChange={handleChange}
-              required
-            />
-            <label>Firstname</label>
-          </div>
-          <div className="form-control">
-            <input
-              type="text"
-              name="lastname"
-              value={formData.lastname}
-              onChange={handleChange}
-              required
-            />
-            <label>Lastname</label>
-          </div>
+
           <div className="form-control">
             <input
               type="text"
