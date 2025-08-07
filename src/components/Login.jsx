@@ -21,7 +21,7 @@ const Login = () => {
           </div>
           <button>Sign In To Buzz</button>
           <div className="form-help">
-            <div class="remember-me">
+            <div className="remember-me">
               <input type="checkbox" />
               <label>Remember me</label>
             </div>

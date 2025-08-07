@@ -13,7 +13,6 @@ const Register = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    console.log(formData);
   };
 
   const [error, setError] = useState("");
@@ -33,9 +32,9 @@ const Register = () => {
       const csrfData = await csrfRes.json();
       const csrfToken = csrfData.csrfToken;
 
-      console.log("🟢 Registrerar användare med:");
-      console.log("CSRF-token:", csrfToken);
-      console.log("FormData:", formData);
+      // console.log("Registrer user:");
+      // console.log("CSRF-token:", csrfToken);
+      // console.log("FormData:", formData);
 
       const res = await fetch(
         "https://chatify-api.up.railway.app/auth/register",
@@ -50,7 +49,7 @@ const Register = () => {
             password: formData.password,
             email: formData.email,
             avatar: formData.avatar,
-            csrfToken: csrfToken, // ← VIKTIGT!
+            csrfToken: csrfToken,
           }),
           credentials: "include",
         }
@@ -60,19 +59,18 @@ const Register = () => {
 
       if (!res.ok) {
         if (data.message?.includes("Username or email already exists")) {
-          setError("Användarnamn eller e-post används redan.");
+          setError("Username or email already exists.");
         } else {
-          setError(data.message || "Registreringen misslyckades.");
+          setError(data.message || "Registration failed.");
         }
         return;
       }
 
-      // Allt gick bra – visa meddelande och skicka till login
-      setSuccess("Registrering lyckades! Skickar dig till inloggning...");
-      setTimeout(() => navigate("/"), 2000); // Redirect efter 2 sek
+      setSuccess("Registration successful! Redirecting to login....");
+      setTimeout(() => navigate("/"), 2000);
     } catch (err) {
-      setError("Något gick fel. Försök igen.");
-      console.error("Registrering fel:", err.message);
+      setError("Something went wrong. Please try again.");
+      console.error("Registration error:", err.message);
     }
   };
 
