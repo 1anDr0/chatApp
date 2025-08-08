@@ -47,14 +47,14 @@ const Login = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        if (data.message === "Invalid credentials") {
+        if (data.error === "Invalid credentials") {
           toast.error("Invalid username or password.");
           setError("Invalid username or password.");
           setSuccess(false);
           setTimeout(() => setError(""), 3000);
         } else {
-          toast.error(data.message || "Login failed.");
-          setError(data.message || "Login failed.");
+          toast.error(data.error || "Login failed.");
+          setError(data.error || "Login failed.");
           setSuccess(false);
           setTimeout(() => setError(""), 3000);
         }
@@ -81,7 +81,7 @@ const Login = () => {
       setError("");
 
       // 5. Gå till chat
-      navigate("/chat");
+      setTimeout(() => navigate("/Chat"), 2000);
     } catch (err) {
       toast.error("Something went wrong. Please try again.");
       console.error("Login error:", err.message);

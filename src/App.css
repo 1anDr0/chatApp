@@ -173,8 +173,3 @@ form button:hover, #code:hover {
   100% { transform: translateX(0); }
 }
 
-.input-error {
-  border: 2px solid red;
-  background-color: #fff0f0;
-  animation: shake 0.3s ease;
-}

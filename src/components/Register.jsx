@@ -33,8 +33,6 @@ const Register = () => {
       const csrfData = await csrfRes.json();
       const csrfToken = csrfData.csrfToken;
 
-      console.log("CSRF-token:", csrfToken);
-
       // console.log("Registered user:");
       // console.log("CSRF-token:", csrfToken);
       // console.log("FormData:", formData);
@@ -59,16 +57,17 @@ const Register = () => {
       );
 
       const data = await res.json();
+      console.log("🔍 Response from register API:", data);
 
       if (!res.ok) {
-        if (data.message?.includes("Username or email already exists")) {
+        if (data.error?.includes("Username or email already exists")) {
           toast.error("Username or email already exists.");
           setError("Username or email already exists.");
           setSuccess(false);
           setTimeout(() => setError(""), 3000);
         } else {
-          toast.error(data.message || "Registration failed.");
-          setError(data.message || "Registration failed.");
+          toast.error(data.error || "Registration failed.");
+          setError(data.error || "Registration failed.");
           setSuccess(false);
           setTimeout(() => setError(""), 3000);
         }
@@ -76,7 +75,8 @@ const Register = () => {
       }
 
       toast.success("Registration successful! Redirecting to login....");
-      setTimeout(() => navigate("/"), 2000);
+      setSuccess(true);
+      setTimeout(() => navigate("/"), 3000);
     } catch (err) {
       toast.error("Something went wrong. Please try again.");
       console.error("Registration error:", err.message);
