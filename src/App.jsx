@@ -1,5 +1,8 @@
 import "./App.css";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Register from "./components/Register";
@@ -12,8 +15,9 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="Chat" element={<Chat />} />
+        <Route path="/Chat" element={<Chat />} />
       </Routes>
+      <ToastContainer theme="colored" />
     </BrowserRouter>
   );
 };

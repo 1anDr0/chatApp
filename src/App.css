@@ -7,6 +7,10 @@
  font-family: 'Roboto', sans-serif;
 }
 
+h1 {
+    color: WHITE;
+}
+
 body {
   background-color: rgb(10, 10, 10);
 }
@@ -150,12 +154,27 @@ form button:hover, #code:hover {
     opacity: 0.8;
 }
 
-.error {
-  color: red;
-  margin-top: 10px;
+.form-control input.input-error {
+  border: 1px solid red;
+  background-color: #464646;
 }
 
-.success {
-  color: green;
-  margin-top: 10px;
+.form-control input.input-success {
+  border: 1px solid green;
+  background-color: #464646;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+  100% { transform: translateX(0); }
+}
+
+.input-error {
+  border: 2px solid red;
+  background-color: #fff0f0;
+  animation: shake 0.3s ease;
 }

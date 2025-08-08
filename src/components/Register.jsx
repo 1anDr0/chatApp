@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { toast } from "react-toastify";
+
 const Register = () => {
   const navigate = useNavigate();
 
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -15,13 +19,10 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
+    setSuccess(false);
 
     try {
       const csrfRes = await fetch("https://chatify-api.up.railway.app/csrf", {
@@ -32,7 +33,9 @@ const Register = () => {
       const csrfData = await csrfRes.json();
       const csrfToken = csrfData.csrfToken;
 
-      // console.log("Registrer user:");
+      console.log("CSRF-token:", csrfToken);
+
+      // console.log("Registered user:");
       // console.log("CSRF-token:", csrfToken);
       // console.log("FormData:", formData);
 
@@ -59,17 +62,23 @@ const Register = () => {
 
       if (!res.ok) {
         if (data.message?.includes("Username or email already exists")) {
+          toast.error("Username or email already exists.");
           setError("Username or email already exists.");
+          setSuccess(false);
+          setTimeout(() => setError(""), 3000);
         } else {
+          toast.error(data.message || "Registration failed.");
           setError(data.message || "Registration failed.");
+          setSuccess(false);
+          setTimeout(() => setError(""), 3000);
         }
         return;
       }
 
-      setSuccess("Registration successful! Redirecting to login....");
+      toast.success("Registration successful! Redirecting to login....");
       setTimeout(() => navigate("/"), 2000);
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
       console.error("Registration error:", err.message);
     }
   };
@@ -89,6 +98,7 @@ const Register = () => {
               value={formData.username}
               onChange={handleChange}
               required
+              className={error ? "input-error" : success ? "input-success" : ""}
             />
             <label>Username</label>
           </div>
@@ -100,6 +110,7 @@ const Register = () => {
               onChange={handleChange}
               required
               minLength={6}
+              className={error ? "input-error" : success ? "input-success" : ""}
             />
             <label>Password</label>
           </div>
@@ -111,15 +122,10 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
               required
+              className={error ? "input-error" : success ? "input-success" : ""}
             />
             <label>Email</label>
           </div>
-
-          {/* Visar felmeddelande */}
-          {error && <p className="error">{error}</p>}
-
-          {/* Visar bekräftelse */}
-          {success && <p className="success">{success}</p>}
 
           <button>Sign Up To Buzz</button>
           <p>Already have an account?</p>
