@@ -17,7 +17,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/Chat" element={<Chat />} />
       </Routes>
-      <ToastContainer theme="colored" />
+      <ToastContainer theme="colored" closeButton={false} />
     </BrowserRouter>
   );
 };

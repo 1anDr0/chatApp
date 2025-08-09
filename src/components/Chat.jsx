@@ -1,8 +1,11 @@
 const Chat = () => {
   return (
-    <div>
-      <h1>Chat</h1>
-    </div>
+    <aside>
+      <nav>
+        <img src="logo1.png" alt="Buzz Logo" />
+      </nav>
+      <button className="signoutbtn">Sign out</button>
+    </aside>
   );
 };
 

@@ -173,3 +173,15 @@ form button:hover, #code:hover {
   100% { transform: translateX(0); }
 }
 
+.signoutbtn {
+    position: fixed;
+    bottom: 40px;
+    left: 40px;
+    width: 125px;
+
+}
+
+.Toastify__toast {
+  font-style: italic; 
+}
+

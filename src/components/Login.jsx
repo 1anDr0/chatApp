@@ -69,18 +69,21 @@ const Login = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify({ id, username, avatar }));
 
-      toast.success("Login successful!", {
-        onClose: () => {
-          toast("Welcome to Buzz!", {
-            type: "default",
-          });
-        },
-      });
+      // 5. Gå till Chat
+      toast.success("Login successful!");
+      setTimeout(() => {
+        toast("Welcome to Buzz!", {
+          style: {
+            backgroundColor: "#fcd12a",
+            color: "black",
+          },
+          closeButton: false,
+          autoClose: 8000,
+        });
+      }, 1000);
 
       setSuccess(true);
       setError("");
-
-      // 5. Gå till chat
       setTimeout(() => navigate("/Chat"), 2000);
     } catch (err) {
       toast.error("Something went wrong. Please try again.");
