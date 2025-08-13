@@ -123,12 +123,7 @@ const Login = () => {
             <label>Password</label>
           </div>
           <button type="submit">Sign In To Buzz</button>
-          <div className="form-help">
-            <div className="remember-me">
-              <input type="checkbox" />
-              <label>Remember me</label>
-            </div>
-          </div>
+
           <p className="signup-text">
             New to Buzz?
             <span className="link" onClick={() => navigate("/Register")}>
