@@ -21,7 +21,7 @@ const Login = () => {
     setSuccess(false);
 
     try {
-      // 1. Hämta CSRF-token
+      // Hämta CSRF-token
       const csrfRes = await fetch("https://chatify-api.up.railway.app/csrf", {
         method: "PATCH",
         credentials: "include",
@@ -30,7 +30,7 @@ const Login = () => {
       const csrfData = await csrfRes.json();
       const csrfToken = csrfData.csrfToken;
 
-      // 2. Skicka inloggning
+      // Skicka inloggning
       const res = await fetch("https://chatify-api.up.railway.app/auth/token", {
         method: "POST",
         headers: {
@@ -61,15 +61,17 @@ const Login = () => {
         return;
       }
 
-      // 3. Decode token
+      // Decoda token
       const decoded = jwtDecode(data.token);
       const { id, username, avatar } = decoded;
 
-      // 4. Spara i localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify({ id, username, avatar }));
+      // Spara i localStorage - en samlad auth-nyckel
+      localStorage.setItem(
+        "auth",
+        JSON.stringify({ token: data.token, userId: id, username, avatar })
+      );
 
-      // 5. Gå till Chat
+      // Gå till chat
       toast.success("Login successful!");
       setTimeout(() => {
         toast("Welcome to Buzz!", {
@@ -84,7 +86,7 @@ const Login = () => {
 
       setSuccess(true);
       setError("");
-      setTimeout(() => navigate("/Chat"), 2000);
+      setTimeout(() => navigate("/chat"), 2000);
     } catch (err) {
       toast.error("Something went wrong. Please try again.");
       console.error("Login error:", err.message);
@@ -123,7 +125,6 @@ const Login = () => {
             <label>Password</label>
           </div>
           <button type="submit">Sign In To Buzz</button>
-
           <p className="signup-text">
             New to Buzz?
             <span className="link" onClick={() => navigate("/Register")}>
