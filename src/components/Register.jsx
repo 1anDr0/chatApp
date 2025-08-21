@@ -6,32 +6,41 @@ import { toast } from "react-toastify";
 const Register = () => {
   const navigate = useNavigate();
 
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  // State-lådor för status och fel
+  const [success, setSuccess] = useState(false); // true om registrering lyckats
+  const [error, setError] = useState(""); // text för felmeddelanden
+
+  // State-låda för formuläret (det användaren skriver)
   const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    email: "",
-    avatar: "https://i.pravatar.cc/150",
+    username: "", // användarnamn
+    email: "", // e-post
+    password: "", // lösenord
+    confirmPassword: "", // bekräfta lösenord (klientkontroll)
   });
 
+  // När användaren skriver i fälten uppdaterar vi formData
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData, // kopiera det gamla
+      [e.target.name]: e.target.value, // ersätt fältet som ändrades
+    });
   };
 
+  // När man trycker "Skapa konto"
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess(false);
+    e.preventDefault(); // stoppa sidladdning
+    setError(""); // rensa gamla fel
+    setSuccess(false); // släck "lyckades"-flaggan
 
     try {
+      // === Steg 1: Hämta CSRF-token (skyddslapp) ===
       const csrfRes = await fetch("https://chatify-api.up.railway.app/csrf", {
-        method: "PATCH",
-        credentials: "include",
+        method: "PATCH", // enligt serverns krav
+        credentials: "include", // skicka cookies
       });
 
-      const csrfData = await csrfRes.json();
-      const csrfToken = csrfData.csrfToken;
+      const csrfData = await csrfRes.json(); // gör om till JSON
+      const csrfToken = csrfData.csrfToken; // plocka ut token-strängen
 
       // console.log("Registered user:");
       // console.log("CSRF-token:", csrfToken);
@@ -40,46 +49,50 @@ const Register = () => {
       const res = await fetch(
         "https://chatify-api.up.railway.app/auth/register",
         {
-          method: "POST",
+          method: "POST", // registrering sker med POST
           headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": csrfToken,
+            "Content-Type": "application/json", // vi skickar JSON
+            "X-CSRF-TOKEN": csrfToken, // lägg token i header
           },
           body: JSON.stringify({
-            username: formData.username,
-            password: formData.password,
+            username: formData.username, // det användaren skrev
             email: formData.email,
-            avatar: formData.avatar,
-            csrfToken: csrfToken,
+            password: formData.password,
+            csrfToken, // skicka även i body (vanligt i denna uppgift)
           }),
-          credentials: "include",
+          credentials: "include", // skicka cookies här också
         }
       );
 
-      const data = await res.json();
-      console.log("🔍 Response from register API:", data);
+      const data = await res.json(); // serverns svar
+
+      // console.log("🔍 Response from register API:", data);
 
       if (!res.ok) {
-        if (data.error?.includes("Username or email already exists")) {
-          toast.error("Username or email already exists.");
-          setError("Username or email already exists.");
-          setSuccess(false);
-          setTimeout(() => setError(""), 3000);
-        } else {
-          toast.error(data.error || "Registration failed.");
-          setError(data.error || "Registration failed.");
-          setSuccess(false);
-          setTimeout(() => setError(""), 3000);
-        }
-        return;
+        // API:et kan svara med "Username or email already exists"
+        // eller annat felmeddelande. Visa snyggt och spara i state.
+        const message =
+          data?.error === "Username or email already exists"
+            ? "Username or email already exists"
+            : data?.error || "Registration failed.";
+        setError(message); // spara felet så vi kan färga inputs
+        toast.error(message); // pling med fel
+        return; // stoppa här
       }
 
-      toast.success("Registration successful! Redirecting to login....");
-      setSuccess(true);
-      setTimeout(() => navigate("/"), 3000);
+      // === Om det gick bra ===
+      toast.success("Registration successful!"); // visa glad pling
+      setSuccess(true); // sätt grön status
+      setError(""); // rensa fel
+      // console.log("✅ Registration OK:", data);
+
+      // Liten försening för att låta användaren se plinget, sedan gå till Login
+      setTimeout(() => navigate("/Login"), 1200); // byt till din login-rutt om annan
     } catch (err) {
-      toast.error("Something went wrong. Please try again.");
-      console.error("Registration error:", err.message);
+      // Nätverksfel/oväntat fel
+      console.error("Registration error:", err?.message || err);
+      toast.error("Something went wrong. Please try again."); // pling med fel
+      setError("Something went wrong. Please try again."); // spara fel
     }
   };
 
