@@ -1,139 +1,116 @@
-// src/pages/Chat.jsx
+// src/components/Chat.jsx
 import { useEffect, useState } from "react";
-import SideNav from "../components/SideNav";
-import MessageList from "./MessageList";
-import MessageInput from "./MessageInput";
+import { useNavigate } from "react-router-dom";
 import {
   fetchMessages,
   postMessage,
   deleteMessageById,
-} from "./services/api.js";
-import { sanitizeMessage } from "./utils/sanitize.js";
-
-/**
- * getAuth
- * ---------------------------------------
- * Hämtar auth-objektet vi sparade vid inloggning (token + id + ev. user).
- * Liten try/catch så appen inte kraschar om localStorage innehåller skräp.
- */
-const getAuth = () => {
-  try {
-    return JSON.parse(localStorage.getItem("auth") || "null");
-  } catch {
-    return null;
-  }
-};
+} from "../services/api.js";
 
 const Chat = () => {
-  // === State (lådor där vi sparar saker under tiden appen kör) ===
-  const [messages, setMessages] = useState([]); // alla pratbubblor
-  const [loading, setLoading] = useState(true); // visar "laddar..."
-  const [error, setError] = useState(""); // snäll feltext om något går snett
+  const navigate = useNavigate();
 
-  // === Vem är jag? ===
-  const auth = getAuth();
-  const token = auth?.token;
-  const myId = auth?.id || auth?.user?.id; // ibland ligger id i auth.id, ibland i auth.user.id
+  // 1) Kolla auth
+  const auth = JSON.parse(localStorage.getItem("auth") || "null");
 
-  /**
-   * load
-   * ---------------------------------------
-   * Hämta ALLA meddelanden från servern och lägg i state.
-   * Visar laddning under tiden och fångar fel.
-   */
-  const load = async () => {
+  useEffect(() => {
+    if (!auth?.token) {
+      navigate("/", { replace: true }); // till Login
+    }
+  }, [auth, navigate]);
+
+  // 2) State
+  const [messages, setMessages] = useState([]);
+  const [text, setText] = useState("");
+  const [error, setError] = useState("");
+
+  // 3) Hämta meddelanden
+  const loadMessages = async () => {
+    setError("");
     try {
-      setLoading(true);
-      setError("");
-      const list = await fetchMessages(token);
-      setMessages(list);
-    } catch (e) {
-      setError(e.message || "Kunde inte hämta meddelanden.");
-    } finally {
-      setLoading(false);
+      const data = await fetchMessages();
+      setMessages(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err?.message || "Failed to load messages");
     }
   };
 
-  // Hämta direkt när sidan öppnas
   useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadMessages();
   }, []);
 
-  /**
-   * handleSend
-   * ---------------------------------------
-   * Tar emot rå text från input-komponenten:
-   * 1) Sanerar texten (tar bort HTML + onödiga mellanslag)
-   * 2) Postar till API
-   * 3) Laddar om listan
-   * Returnerar true/false så input vet om den ska tömma fältet.
-   */
-  const handleSend = async (rawText) => {
+  // 4) Skicka meddelande
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+
     try {
-      setError("");
-
-      if (!token) {
-        setError("Du är inte inloggad.");
-        return false;
-      }
-
-      const clean = sanitizeMessage(rawText);
-      if (!clean) {
-        setError("Meddelandet kan inte vara tomt.");
-        return false;
-      }
-
-      await postMessage(token, clean);
-      await load();
-      return true; // ok -> töm input
-    } catch (e) {
-      setError(e.message || "Kunde inte skicka meddelandet.");
-      return false; // fel -> behåll texten
+      const created = await postMessage({ message: text.trim() });
+      setMessages((prev) => [...prev, created]);
+      setText("");
+    } catch (err) {
+      setError(err?.message || "Failed to send message");
     }
   };
 
-  /**
-   * handleDelete
-   * ---------------------------------------
-   * Raderar ett meddelande med visst id.
-   * Visar confirm först, anropar API och laddar om listan.
-   */
-  const handleDelete = async (msgId) => {
+  // 5) Radera meddelande
+  const handleDelete = async (id) => {
     try {
-      setError("");
-      const ok = window.confirm("Radera meddelandet?");
-      if (!ok) return;
-      await deleteMessageById(token, msgId);
-      await load();
-    } catch (e) {
-      setError(e.message || "Kunde inte radera meddelandet.");
+      await deleteMessageById(id);
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+    } catch (err) {
+      setError(err?.message || "Failed to delete message");
     }
   };
 
-  // === UI ===
+  // Hjälp: Är meddelandet mitt?
+  const isMine = (msg) => {
+    const myId = auth?.id ?? auth?.userId;
+    return (
+      msg.userId === myId || msg.user?.id === myId || msg.authorId === myId
+    );
+  };
+
   return (
-    <div className="chat-layout">
-      {/* Sidomeny med Logout m.m. */}
-      <SideNav />
+    <div>
+      <h2>Chat</h2>
 
-      <main className="chat-container">
-        {/* Statusrader (enkla och tydliga) */}
-        {loading && <div className="loading">Laddar meddelanden…</div>}
-        {error && !loading && <div className="error">{error}</div>}
+      <div>
+        <button onClick={loadMessages}>Refresh</button>
+        <button
+          onClick={() => {
+            localStorage.removeItem("auth");
+            navigate("/", { replace: true });
+          }}
+        >
+          Log out
+        </button>
+      </div>
 
-        {/* När det är laddat: lista + input */}
-        {!loading && (
-          <>
-            <MessageList
-              messages={messages}
-              myId={myId}
-              onDelete={handleDelete}
-            />
-            <MessageInput onSend={handleSend} disabled={!token} />
-          </>
-        )}
-      </main>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <ul>
+        {messages.map((m) => (
+          <li key={m.id}>
+            <strong>{isMine(m) ? "(me)" : m.user?.username || "other"}:</strong>{" "}
+            {m.message}{" "}
+            {isMine(m) && (
+              <button onClick={() => handleDelete(m.id)}>delete</button>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <form onSubmit={handleSend}>
+        <input
+          type="text"
+          name="message"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Type a message…"
+        />
+        <button type="submit">Send</button>
+      </form>
     </div>
   );
 };

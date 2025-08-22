@@ -8,7 +8,7 @@
 const MessageList = ({ messages, myId, onDelete }) => {
   // Små hjälpare för att plocka rätt fält oavsett API-form
   const getOwnerId = (m) => m.userId ?? m.user_id ?? m.user?.id;
-  const getText = (m) => m.message ?? m.text ?? "";
+  const getText = (m) => m.text ?? m.message ?? "";
 
   return (
     <div className="messages">
