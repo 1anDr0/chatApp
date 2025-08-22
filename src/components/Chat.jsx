@@ -1,6 +1,7 @@
 // src/components/Chat.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import SideNav from "./SideNav";
 import {
   fetchMessages,
   postMessage,
@@ -10,28 +11,30 @@ import {
 const Chat = () => {
   const navigate = useNavigate();
 
-  // 1) Kolla auth
   const auth = JSON.parse(localStorage.getItem("auth") || "null");
-
   useEffect(() => {
-    if (!auth?.token) {
-      navigate("/", { replace: true }); // till Login
-    }
+    if (!auth?.token) navigate("/", { replace: true });
   }, [auth, navigate]);
 
-  // 2) State
   const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
+  const [inputText, setInputText] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 3) Hämta meddelanden
+  const myId = auth?.id ?? auth?.userId;
+  const isMine = (m) =>
+    m.userId === myId || m.user?.id === myId || m.authorId === myId;
+
   const loadMessages = async () => {
-    setError("");
     try {
-      const data = await fetchMessages();
+      setLoading(true);
+      setError("");
+      const data = await fetchMessages(); // <-- inga parametrar
       setMessages(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setError(err?.message || "Failed to load messages");
+    } catch (e) {
+      setError(e?.message || "Failed to load messages");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,82 +42,93 @@ const Chat = () => {
     loadMessages();
   }, []);
 
-  // 4) Skicka meddelande
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    const clean = inputText.trim();
+    if (!clean) return;
 
     try {
-      const created = await postMessage({ message: text.trim() });
-      setMessages((prev) => [...prev, created]);
-      setText("");
-    } catch (err) {
-      setError(err?.message || "Failed to send message");
+      const created = await postMessage({ text: clean });
+
+      const myId = auth?.id ?? auth?.userId;
+      const withUser = {
+        ...created,
+        userId: created.userId ?? myId,
+        user: created.user ?? { id: myId, username: auth?.user?.username },
+      };
+
+      setMessages((prev) => [...prev, withUser]);
+      setInputText("");
+    } catch (e) {
+      setError(e?.message || "Failed to send message");
     }
   };
 
-  // 5) Radera meddelande
   const handleDelete = async (id) => {
     try {
       await deleteMessageById(id);
       setMessages((prev) => prev.filter((m) => m.id !== id));
-    } catch (err) {
-      setError(err?.message || "Failed to delete message");
+    } catch (e) {
+      setError(e?.message || "Failed to delete message");
     }
   };
 
-  // Hjälp: Är meddelandet mitt?
-  const isMine = (msg) => {
-    const myId = auth?.id ?? auth?.userId;
-    return (
-      msg.userId === myId || msg.user?.id === myId || msg.authorId === myId
-    );
-  };
-
   return (
-    <div>
-      <h2>Chat</h2>
-      <main className="chat-container">
-        <div className="messages">
-          <div>
-            <button onClick={loadMessages}>Refresh</button>
-            <button
-              onClick={() => {
-                localStorage.removeItem("auth");
-                navigate("/", { replace: true });
-              }}
-            >
-              Log out
+    <div className="page">
+      <SideNav />
+      <main className="chat-stage">
+        <section className="chat-panel">
+          <header className="chat-topbar">
+            <button className="refresh-btn" onClick={loadMessages}>
+              🔄 Refresh
             </button>
-          </div>
+          </header>
 
-          {error && <p style={{ color: "red" }}>{error}</p>}
+          {error && <p className="error">{error}</p>}
+          {loading && <div className="loading">Loading…</div>}
 
-          <ul>
-            {messages.map((m) => (
-              <li key={m.id}>
-                <strong>
-                  {isMine(m) ? "(me)" : m.user?.username || "other"}:
-                </strong>{" "}
-                {m.message}{" "}
-                {isMine(m) && (
-                  <button onClick={() => handleDelete(m.id)}>delete</button>
-                )}
-              </li>
-            ))}
+          <ul className="message-list">
+            {messages.map((msg) => {
+              const mine = isMine(msg);
+              const sender = mine ? "Me" : msg.user?.username || "Other";
+              return (
+                <li
+                  key={msg.id}
+                  className={`message ${mine ? "right" : "left"}`}
+                >
+                  <span className="bubble">
+                    <strong className="sender">{sender}</strong>
+                    <span className="text">
+                      {msg.text ?? msg.message ?? ""}
+                    </span>
+                  </span>
+                  {mine && (
+                    <button
+                      className="delete"
+                      onClick={() => handleDelete(msg.id)}
+                    >
+                      ✖
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
 
-          <form onSubmit={handleSend}>
+          <form className="input-bar" onSubmit={handleSend}>
             <input
+              className="chat-input"
               type="text"
-              name="message"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Type a message…"
+              placeholder="Create new message"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              required
             />
-            <button type="submit">Send</button>
+            <button className="send-btn" type="submit">
+              Send
+            </button>
           </form>
-        </div>
+        </section>
       </main>
     </div>
   );

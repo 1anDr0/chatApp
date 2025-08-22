@@ -70,13 +70,10 @@ export async function loginUser({ username, password }) {
 /* ==================== MESSAGES ==================== */
 
 // 4) Hämta meddelanden (valfritt conversationId)
-export async function fetchMessages({ conversationId } = {}) {
+export async function fetchMessages() {
   const token = getToken();
   if (!token) throw new Error("Inte inloggad");
-  const qs = conversationId
-    ? `?conversationId=${encodeURIComponent(conversationId)}`
-    : "";
-  const res = await fetch(`${BASE_URL}/messages${qs}`, {
+  const res = await fetch(`${BASE_URL}/messages`, {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
     credentials: "include",
@@ -87,7 +84,7 @@ export async function fetchMessages({ conversationId } = {}) {
 }
 
 // 5) Skapa meddelande
-export async function postMessage({ text, conversationId }) {
+export async function postMessage({ text }) {
   const token = getToken();
   if (!token) throw new Error("Inte inloggad");
   const csrf = await getCsrfToken();
@@ -99,11 +96,12 @@ export async function postMessage({ text, conversationId }) {
       Authorization: `Bearer ${token}`,
       "X-CSRF-TOKEN": csrf,
     },
-    body: JSON.stringify({ text, conversationId }),
+    body: JSON.stringify({ text }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return data;
+  const msg = data.latestMessage ?? data;
+  return msg;
 }
 
 // 6) Radera meddelande
@@ -133,72 +131,72 @@ export async function deleteMessageById(msgId) {
 
 /* ===================== USERS ====================== */
 
-// 7) Hämta alla användare (enkel variant utan extra params)
-export async function getUsers() {
-  const token = getToken();
-  if (!token) throw new Error("Inte inloggad");
-  const res = await fetch(`${BASE_URL}/users`, {
-    headers: { Authorization: `Bearer ${token}` },
-    credentials: "include",
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return data;
-}
+// // 7) Hämta alla användare (enkel variant utan extra params)
+// export async function getUsers() {
+//   const token = getToken();
+//   if (!token) throw new Error("Inte inloggad");
+//   const res = await fetch(`${BASE_URL}/users`, {
+//     headers: { Authorization: `Bearer ${token}` },
+//     credentials: "include",
+//   });
+//   const data = await res.json().catch(() => ({}));
+//   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+//   return data;
+// }
 
-// 8) Hämta specifik användare
-export async function getUserById(userId) {
-  const token = getToken();
-  if (!token) throw new Error("Inte inloggad");
-  const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    credentials: "include",
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return data;
-}
+// // 8) Hämta specifik användare
+// export async function getUserById(userId) {
+//   const token = getToken();
+//   if (!token) throw new Error("Inte inloggad");
+//   const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
+//     headers: { Authorization: `Bearer ${token}` },
+//     credentials: "include",
+//   });
+//   const data = await res.json().catch(() => ({}));
+//   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+//   return data;
+// }
 
-// 9) Uppdatera inloggad användare
-export async function updateCurrentUser({ username, email, avatar }) {
-  const token = getToken();
-  if (!token) throw new Error("Inte inloggad");
-  const csrf = await getCsrfToken();
-  const res = await fetch(`${BASE_URL}/user`, {
-    method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      "X-CSRF-TOKEN": csrf,
-    },
-    body: JSON.stringify({ username, email, avatar }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return data;
-}
+// // 9) Uppdatera inloggad användare
+// export async function updateCurrentUser({ username, email, avatar }) {
+//   const token = getToken();
+//   if (!token) throw new Error("Inte inloggad");
+//   const csrf = await getCsrfToken();
+//   const res = await fetch(`${BASE_URL}/user`, {
+//     method: "PUT",
+//     credentials: "include",
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Bearer ${token}`,
+//       "X-CSRF-TOKEN": csrf,
+//     },
+//     body: JSON.stringify({ username, email, avatar }),
+//   });
+//   const data = await res.json().catch(() => ({}));
+//   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+//   return data;
+// }
 
-// 10) Radera användare (admin eller egen – beror på API-regler)
-export async function deleteUserById(userId) {
-  const token = getToken();
-  if (!token) throw new Error("Inte inloggad");
-  const csrf = await getCsrfToken();
-  const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
-    method: "DELETE",
-    credentials: "include",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "X-CSRF-TOKEN": csrf,
-    },
-  });
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const data = await res.json();
-      msg = data?.message || msg;
-    } catch {}
-    throw new Error(msg);
-  }
-  return true;
-}
+// // 10) Radera användare (admin eller egen – beror på API-regler)
+// export async function deleteUserById(userId) {
+//   const token = getToken();
+//   if (!token) throw new Error("Inte inloggad");
+//   const csrf = await getCsrfToken();
+//   const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
+//     method: "DELETE",
+//     credentials: "include",
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//       "X-CSRF-TOKEN": csrf,
+//     },
+//   });
+//   if (!res.ok) {
+//     let msg = `HTTP ${res.status}`;
+//     try {
+//       const data = await res.json();
+//       msg = data?.message || msg;
+//     } catch {}
+//     throw new Error(msg);
+//   }
+//   return true;
+// }
