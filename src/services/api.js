@@ -64,8 +64,23 @@ export async function loginUser({ username, password }) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.message || "Invalid credentials");
-  return data; // { token }
+  // ✅ hämta även user-info direkt
+  const meRes = await fetch(`${BASE_URL}/users/${data.id}`, {
+    headers: { Authorization: `Bearer ${data.token}` },
+    credentials: "include",
+  });
+  const me = await meRes.json().catch(() => ({}));
+
+  // returnera token + user-info
+  return {
+    ...data, // { token, id }
+    username: me.username,
+  };
 }
+console.log(
+  "💾 Sparat i localStorage:",
+  JSON.parse(localStorage.getItem("auth"))
+);
 
 /* ==================== MESSAGES ==================== */
 
@@ -131,31 +146,31 @@ export async function deleteMessageById(msgId) {
 
 /* ===================== USERS ====================== */
 
-// // 7) Hämta alla användare (enkel variant utan extra params)
-// export async function getUsers() {
-//   const token = getToken();
-//   if (!token) throw new Error("Inte inloggad");
-//   const res = await fetch(`${BASE_URL}/users`, {
-//     headers: { Authorization: `Bearer ${token}` },
-//     credentials: "include",
-//   });
-//   const data = await res.json().catch(() => ({}));
-//   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-//   return data;
-// }
+// 7) Hämta alla användare (enkel variant utan extra params)
+//  export async function getUsers() {
+//    const token = getToken();
+//    if (!token) throw new Error("Inte inloggad");
+//    const res = await fetch(`${BASE_URL}/users`, {
+//      headers: { Authorization: `Bearer ${token}` },
+//      credentials: "include",
+//    });
+//    const data = await res.json().catch(() => ({}));
+//    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+//    return data;
+//  }
 
 // // 8) Hämta specifik användare
-// export async function getUserById(userId) {
-//   const token = getToken();
-//   if (!token) throw new Error("Inte inloggad");
-//   const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
-//     headers: { Authorization: `Bearer ${token}` },
-//     credentials: "include",
-//   });
-//   const data = await res.json().catch(() => ({}));
-//   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-//   return data;
-// }
+export async function getUserById(userId) {
+  const token = getToken();
+  if (!token) throw new Error("Inte inloggad");
+  const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: "include",
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return data;
+}
 
 // // 9) Uppdatera inloggad användare
 // export async function updateCurrentUser({ username, email, avatar }) {

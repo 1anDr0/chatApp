@@ -12,6 +12,7 @@ const Chat = () => {
   const navigate = useNavigate();
 
   const auth = JSON.parse(localStorage.getItem("auth") || "null");
+  console.log("CHAT - localStorage:", auth);
   useEffect(() => {
     if (!auth?.token) navigate("/", { replace: true });
   }, [auth, navigate]);
@@ -78,19 +79,19 @@ const Chat = () => {
       <SideNav />
       <main className="chat-stage">
         <section className="chat-panel">
-          <header className="chat-topbar">
-            <button className="refresh-btn" onClick={loadMessages}>
-              🔄 Refresh
-            </button>
-          </header>
-
           {error && <p className="error">{error}</p>}
           {loading && <div className="loading">Loading…</div>}
 
           <ul className="message-list">
             {messages.map((msg) => {
               const mine = isMine(msg);
-              const sender = mine ? "Me" : msg.user?.username || "Other";
+              let sender;
+              if (mine) {
+                sender = auth?.username || "Me";
+              } else {
+                sender = msg.user?.username || "Other";
+              }
+
               return (
                 <li
                   key={msg.id}
@@ -123,10 +124,13 @@ const Chat = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               required
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault(); // hindra radbrytning
+                  handleSend(e);
+                }
+              }}
             />
-            <button className="send-btn" type="submit">
-              Send
-            </button>
           </form>
         </section>
       </main>

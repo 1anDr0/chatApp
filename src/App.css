@@ -5,6 +5,7 @@
   padding: 0;
   box-sizing: border-box;
  font-family: 'Roboto', sans-serif;
+ 
 }
 
 h1 {
@@ -123,7 +124,7 @@ label, p, span {
     text-decoration: none;
 }
 
-span {
+ .link {
     color: #0071eb;
     cursor: pointer;
     padding: 4px;
@@ -184,4 +185,15 @@ form button:hover, #code:hover {
 .Toastify__toast {
   font-style: italic; 
 }
+
+aside {
+  position: fixed;
+  position: fixed;
+    padding: 10px 30px 25px 30px;   /* avstånd från vänster */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh; /* fyller hela höjden */
+}
+
 

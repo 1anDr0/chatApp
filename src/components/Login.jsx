@@ -22,10 +22,9 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // hindrar webbläsarens standard-beteende (ladda om sidan)
     setError(""); // nollställ felmeddelande
+    setSubmitting(true);
 
     try {
-      setSubmitting(true);
-
       // 1) logga in mot API
       const data = await loginUser({
         username: formData.username.trim(),
@@ -36,13 +35,21 @@ const Login = () => {
       const decoded = jwtDecode(data.token);
 
       // 3) spara auth-info i localStorage
+
+      console.log("Login - decoded token:", decoded);
+
+      // här får du username
+
       const authData = {
         token: data.token,
         id: decoded.id,
-        username: decoded.username,
-        avatar: decoded.avatar, // avatar är en sträng/URL
+        username: decoded.user,
+        avatar: decoded.avatar,
+        email: decoded.email,
       };
+
       localStorage.setItem("auth", JSON.stringify(authData));
+      console.log("Login- localStorage:", authData);
 
       toast.success("Login successful!");
       setTimeout(() => navigate("/Chat"), 1000);

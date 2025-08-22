@@ -21,26 +21,31 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  z-index: 1;
 }
 
-/* topbar */
-.chat-topbar {
-  padding: 8px 10px;
-  display: flex; justify-content: flex-end; gap: 8px;
-}
-.refresh-btn { background: #2e2e2e; color:#fff; border:0; padding:6px 10px; border-radius:6px; }
 
-/* lista/bubblor */
 .message-list {
   list-style: none;
   margin: 0;
-  padding: 16px 12px 84px; /* plats för input-bar */
+  padding: 16px 12px 84px;
   overflow-y: auto;
   flex: 1;
+  display: flex;              /* ✨ */
+  flex-direction: column;     /* ✨ */
 }
-.message { display: flex; align-items: center; gap: 6px; margin: 10px 8px; }
-.message.left  { justify-content: flex-start; }
-.message.right { justify-content: flex-end; }
+
+/* Varje rad ska fylla hela bredden */
+.message {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 8px;
+}
+
+/* .message.left  { justify-content: flex-start; }
+.message.right { justify-content: flex-end; } */
 
 .bubble {
   max-width: 70%;
@@ -52,32 +57,30 @@
   font-size: 14px;
   line-height: 1.25;
   color: #111;
-  background: #ececec;            /* vänsterbubbla */
+  background: #ffffff;
 }
-.message.right .bubble {
-  background: #111;               /* högerbubbla */
-  color: #fff;
+
+.message.right .bubble { 
+  justify-content: flex-end;          /* ⬅️ key line */
 }
+
 .sender { opacity: .7; font-size: 12px; }
 .text { white-space: pre-wrap; word-break: break-word; }
 .delete { background: transparent; border: 0; color: #bbb; cursor: pointer; }
-
 /* input längst ned, mörk bar */
 .input-bar {
   position: absolute;
-  left: 12px; right: 12px; bottom: 12px;
+  left: 12px; right: 12px; bottom: 1px;
   background: #333;
   border-radius: 6px;
   display: flex; gap: 8px; align-items: center;
-  padding: 8px;
+  padding: 2px;
 }
 .chat-input {
   flex: 1; background: #2a2a2a; color: #eee; border: 0;
   padding: 10px 12px; border-radius: 4px; outline: none;
 }
-.send-btn {
-  background: #000; color: #fff; border: 0; padding: 10px 14px; border-radius: 4px;
-}
+
 
 /* meddelanden/loader/fel */
 .loading, .error {
