@@ -27,6 +27,9 @@ export async function getCsrfToken() {
 // Registrera user
 export async function registerUser({ username, password, email }) {
   const csrf = await getCsrfToken();
+
+  const DEFAULT_AVATAR = "https://i.pravatar.cc/200";
+
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
     credentials: "include",
@@ -34,7 +37,13 @@ export async function registerUser({ username, password, email }) {
       "Content-Type": "application/json",
       "X-CSRF-TOKEN": csrf,
     },
-    body: JSON.stringify({ username, password, email }),
+    body: JSON.stringify({
+      username,
+      password,
+      email,
+      avatar: DEFAULT_AVATAR,
+      csrfToken: csrf,
+    }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.message || "Registration failed");
@@ -51,7 +60,7 @@ export async function loginUser({ username, password }) {
       "Content-Type": "application/json",
       "X-CSRF-TOKEN": csrf,
     },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password, csrfToken: csrf }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.message || "Invalid credentials");

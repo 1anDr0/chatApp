@@ -15,7 +15,6 @@ const Register = () => {
     username: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
 
   // När användaren skriver i fälten uppdaterar vi formData

@@ -74,43 +74,48 @@ const Chat = () => {
   return (
     <div>
       <h2>Chat</h2>
+      <main className="chat-container">
+        <div className="messages">
+          <div>
+            <button onClick={loadMessages}>Refresh</button>
+            <button
+              onClick={() => {
+                localStorage.removeItem("auth");
+                navigate("/", { replace: true });
+              }}
+            >
+              Log out
+            </button>
+          </div>
 
-      <div>
-        <button onClick={loadMessages}>Refresh</button>
-        <button
-          onClick={() => {
-            localStorage.removeItem("auth");
-            navigate("/", { replace: true });
-          }}
-        >
-          Log out
-        </button>
-      </div>
+          {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+          <ul>
+            {messages.map((m) => (
+              <li key={m.id}>
+                <strong>
+                  {isMine(m) ? "(me)" : m.user?.username || "other"}:
+                </strong>{" "}
+                {m.message}{" "}
+                {isMine(m) && (
+                  <button onClick={() => handleDelete(m.id)}>delete</button>
+                )}
+              </li>
+            ))}
+          </ul>
 
-      <ul>
-        {messages.map((m) => (
-          <li key={m.id}>
-            <strong>{isMine(m) ? "(me)" : m.user?.username || "other"}:</strong>{" "}
-            {m.message}{" "}
-            {isMine(m) && (
-              <button onClick={() => handleDelete(m.id)}>delete</button>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      <form onSubmit={handleSend}>
-        <input
-          type="text"
-          name="message"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type a message…"
-        />
-        <button type="submit">Send</button>
-      </form>
+          <form onSubmit={handleSend}>
+            <input
+              type="text"
+              name="message"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Type a message…"
+            />
+            <button type="submit">Send</button>
+          </form>
+        </div>
+      </main>
     </div>
   );
 };
