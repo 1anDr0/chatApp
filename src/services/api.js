@@ -160,17 +160,17 @@ export async function deleteMessageById(msgId) {
 //  }
 
 // // 8) Hämta specifik användare
-export async function getUserById(userId) {
-  const token = getToken();
-  if (!token) throw new Error("Inte inloggad");
-  const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    credentials: "include",
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return data;
-}
+// export async function getUserById(userId) {
+//   const token = getToken();
+//   if (!token) throw new Error("Inte inloggad");
+//   const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
+//     headers: { Authorization: `Bearer ${token}` },
+//     credentials: "include",
+//   });
+//   const data = await res.json().catch(() => ({}));
+//   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+//   return data;
+// }
 
 // // 9) Uppdatera inloggad användare
 // export async function updateCurrentUser({ username, email, avatar }) {

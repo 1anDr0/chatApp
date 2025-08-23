@@ -13,29 +13,43 @@ const Chat = () => {
 
   const auth = JSON.parse(localStorage.getItem("auth") || "null");
   console.log("CHAT - localStorage:", auth);
+
   useEffect(() => {
-    if (!auth?.token) navigate("/", { replace: true });
+    // Finns auth.objekt?
+    if (!auth) {
+      console.log("❌ Ingen auth hittad i localStorage. Skickar till login...");
+      navigate("/", { replace: true });
+      return;
+    }
+
+    // innehåller auth en token?
+    if (!auth.token) {
+      console.log("❌ Auth finns, men ingen token. Skickar till login...");
+      navigate("/", { replace: true });
+      return;
+    }
+
+    // användaren är inloggad
+    console.log("✅ Användare är inloggad med token:", auth.token);
   }, [auth, navigate]);
 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // ID från auth
   const myId = auth?.id ?? auth?.userId;
-  const isMine = (m) =>
-    m.userId === myId || m.user?.id === myId || m.authorId === myId;
+
+  // Är meddelandet mitt?
+  const isMine = (m) => m.userId === myId;
 
   const loadMessages = async () => {
     try {
-      setLoading(true);
+      const data = await fetchMessages();
+      setMessages(data);
       setError("");
-      const data = await fetchMessages(); // <-- inga parametrar
-      setMessages(Array.isArray(data) ? data : []);
-    } catch (e) {
-      setError(e?.message || "Failed to load messages");
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      setError(err.message || "Failed to load messages");
     }
   };
 
@@ -45,23 +59,29 @@ const Chat = () => {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    const clean = inputText.trim();
-    if (!clean) return;
+
+    // ta bort onödiga mellanslag
+    const text = inputText.trim();
+    if (!text) return;
 
     try {
-      const created = await postMessage({ text: clean });
+      // skapa nytt meddelande via API
+      const created = await postMessage({ text });
 
+      // säkerställ att meddelandet har rätt user-info
       const myId = auth?.id ?? auth?.userId;
-      const withUser = {
+      const newMessage = {
         ...created,
-        userId: created.userId ?? myId,
-        user: created.user ?? { id: myId, username: auth?.user?.username },
+        userId: created.userId || myId,
+        user: created.user || { id: myId, username: auth?.user?.username },
       };
 
-      setMessages((prev) => [...prev, withUser]);
+      // lägg till i listan och töm inputfältet
+      setMessages((prev) => [...prev, newMessage]);
       setInputText("");
-    } catch (e) {
-      setError(e?.message || "Failed to send message");
+      setError(""); // rensa ev. gammalt fel
+    } catch (error) {
+      setError(error.message || "Failed to send message");
     }
   };
 
@@ -80,7 +100,6 @@ const Chat = () => {
       <main className="chat-stage">
         <section className="chat-panel">
           {error && <p className="error">{error}</p>}
-          {loading && <div className="loading">Loading…</div>}
 
           <ul className="message-list">
             {messages.map((msg) => {
