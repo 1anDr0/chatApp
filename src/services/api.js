@@ -45,9 +45,17 @@ export async function registerUser({ username, password, email }) {
       csrfToken: csrf,
     }),
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.message || "Registration failed");
-  return data; // t.ex. { id, username, ... }
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    data = {};
+  }
+  if (!res.ok) {
+    // felmeddelande från API:t
+    const msg = data?.error || data?.message || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
 }
 
 // 3) Logga in (returnerar { token })

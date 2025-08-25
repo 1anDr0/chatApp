@@ -8,7 +8,6 @@ const Register = () => {
   const navigate = useNavigate();
 
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
@@ -17,39 +16,35 @@ const Register = () => {
     password: "",
   });
 
-  // När användaren skriver i fälten uppdaterar vi formData
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (error) setError("");
   };
 
-  // När man trycker "Skapa konto"
   const handleSubmit = async (e) => {
-    e.preventDefault(); // stoppa sidladdning
-    setError(""); // rensa gamla fel
-    setSuccess(false); // släck "lyckades"-flaggan
+    e.preventDefault();
+    setError("");
 
     try {
       setSubmitting(true);
 
       const data = await registerUser({
-        username: formData.username.trim(),
-        email: formData.email.trim(),
+        username: formData.username,
+        email: formData.email,
         password: formData.password,
       });
 
       toast.success("Registration successful!");
-      setSuccess(true);
+      console.log("✅ Registration response:", data);
+      setFormData({ username: "", email: "", password: "" });
 
       setTimeout(() => navigate("/Login"), 1000);
       return data;
     } catch (err) {
-      const msg =
-        err?.message === "Username or email already exists"
-          ? err.message
-          : err?.message || "Registration failed.";
+      const msg = err?.message || "Registration failed.";
       setError(msg);
       toast.error(msg);
+      console.error("❌ Registration error:", err);
     } finally {
       setSubmitting(false);
     }
@@ -71,7 +66,8 @@ const Register = () => {
               value={formData.username}
               onChange={handleChange}
               required
-              className={error ? "input-error" : success ? "input-success" : ""}
+              className={error ? "input-error" : ""}
+              autoFocus
             />
             <label>Username</label>
           </div>
@@ -84,7 +80,7 @@ const Register = () => {
               onChange={handleChange}
               required
               minLength={6}
-              className={error ? "input-error" : success ? "input-success" : ""}
+              className={error ? "input-error" : ""}
             />
             <label>Password</label>
           </div>
@@ -96,7 +92,7 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
               required
-              className={error ? "input-error" : success ? "input-success" : ""}
+              className={error ? "input-error" : ""}
             />
             <label>Email</label>
           </div>

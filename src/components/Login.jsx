@@ -7,21 +7,18 @@ import { loginUser } from "../services/api";
 const Login = () => {
   const navigate = useNavigate();
 
-  // State (små "lådor" där vi sparar saker som ändras)
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({ username: "", password: "" }); // sparar vad användaren skriver i formuläret
 
-  // När användaren skriver i input-fälten uppdaterar vi formData
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (error) setError("");
   };
 
-  // När användaren trycker på "Sign In"
   const handleSubmit = async (e) => {
-    e.preventDefault(); // hindrar webbläsarens standard-beteende (ladda om sidan)
-    setError(""); // nollställ felmeddelande
+    e.preventDefault();
+    setError("");
     setSubmitting(true);
 
     try {
@@ -34,11 +31,7 @@ const Login = () => {
       // 2) API returnerar token → decoda
       const decoded = jwtDecode(data.token);
 
-      // 3) spara auth-info i localStorage
-
       console.log("Login - decoded token:", decoded);
-
-      // här får du username
 
       const authData = {
         token: data.token,
@@ -64,24 +57,25 @@ const Login = () => {
       setSubmitting(false);
     }
   };
-  // === Det som ritas ut på skärmen ===
+
   return (
     <div>
       <nav>
-        <img src="logo1.png" alt="Buzz Logo" /> {/* Logotyp */}
+        <img src="logo1.png" alt="Buzz Logo" />
       </nav>
       <div className="form-wrapper">
-        <h2>Sign In</h2> {/* Rubrik */}
+        <h2>Sign In</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-control">
             <input
               type="text"
               name="username"
-              value={formData.username} // kopplad till vårt state
-              onChange={handleChange} // uppdaterar state när man skriver
-              required // måste fyllas i
+              value={formData.username}
+              onChange={handleChange}
+              required
               autoComplete="username"
               className={error ? "input-error" : ""}
+              autoFocus
             />
             <label>Username</label>
           </div>
@@ -89,10 +83,10 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              value={formData.password} // kopplad till vårt state
-              onChange={handleChange} // uppdateras när man skriver
-              required // måste fyllas i
-              minLength={6} // minst 6 tecken
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength={6}
               autoComplete="current-password"
               className={error ? "input-error" : ""}
             />
@@ -101,7 +95,7 @@ const Login = () => {
           <button type="submit" disabled={submitting}>
             {submitting ? "Logging in..." : "Sign In To Buzz"}
           </button>
-          {/* Knapp för att logga in */}
+
           <p className="signup-text">
             New to Buzz?
             <span className="link" onClick={() => navigate("/Register")}>
@@ -114,5 +108,4 @@ const Login = () => {
   );
 };
 
-// Exporterar komponenten så den kan användas i App.jsx eller någon annan fil
 export default Login;

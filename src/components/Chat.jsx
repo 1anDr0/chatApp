@@ -46,6 +46,7 @@ const Chat = () => {
   const loadMessages = async () => {
     try {
       const data = await fetchMessages();
+      console.log(data);
       setMessages(data);
       setError("");
     } catch (err) {
@@ -60,15 +61,12 @@ const Chat = () => {
   const handleSend = async (e) => {
     e.preventDefault();
 
-    // ta bort onödiga mellanslag
     const text = inputText.trim();
     if (!text) return;
 
     try {
-      // skapa nytt meddelande via API
       const created = await postMessage({ text });
 
-      // säkerställ att meddelandet har rätt user-info
       const myId = auth?.id ?? auth?.userId;
       const newMessage = {
         ...created,
@@ -76,10 +74,9 @@ const Chat = () => {
         user: created.user || { id: myId, username: auth?.user?.username },
       };
 
-      // lägg till i listan och töm inputfältet
       setMessages((prev) => [...prev, newMessage]);
       setInputText("");
-      setError(""); // rensa ev. gammalt fel
+      setError("");
     } catch (error) {
       setError(error.message || "Failed to send message");
     }
@@ -93,7 +90,6 @@ const Chat = () => {
       setError(e?.message || "Failed to delete message");
     }
   };
-
   return (
     <div className="page">
       <SideNav />
@@ -102,30 +98,60 @@ const Chat = () => {
           {error && <p className="error">{error}</p>}
 
           <ul className="message-list">
-            {messages.map((msg) => {
-              const mine = isMine(msg);
-              let sender;
+            {messages.map((meddelande) => {
+              // Är meddelandet mitt?
+              const mine = isMine(meddelande);
+
+              // Bestäm avsändare
+              let sender = "Other"; // default
               if (mine) {
-                sender = auth?.username || "Me";
+                if (auth && auth.username) {
+                  sender = auth.username;
+                } else {
+                  sender = "Me";
+                }
               } else {
-                sender = msg.user?.username || "Other";
+                if (meddelande && meddelande.user && meddelande.user.username) {
+                  sender = meddelande.user.username;
+                } else {
+                  sender = "Other";
+                }
               }
 
+              // Bestäm text
+              let text = "";
+              if (
+                meddelande &&
+                meddelande.text !== undefined &&
+                meddelande.text !== null
+              ) {
+                text = meddelande.text;
+              } else if (
+                meddelande &&
+                meddelande.message !== undefined &&
+                meddelande.message !== null
+              ) {
+                text = meddelande.message;
+              } else {
+                text = "";
+              }
               return (
                 <li
-                  key={msg.id}
+                  key={meddelande.id}
                   className={`message ${mine ? "right" : "left"}`}
                 >
                   <span className="bubble">
                     <strong className="sender">{sender}</strong>
-                    <span className="text">
-                      {msg.text ?? msg.message ?? ""}
-                    </span>
+                    <span className="text">{text}</span>
                   </span>
+
                   {mine && (
                     <button
+                      type="button"
                       className="delete"
-                      onClick={() => handleDelete(msg.id)}
+                      onClick={() => handleDelete(meddelande.id)}
+                      aria-label="Delete message"
+                      title="Delete message"
                     >
                       ✖
                     </button>
@@ -145,7 +171,7 @@ const Chat = () => {
               required
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault(); // hindra radbrytning
+                  e.preventDefault();
                   handleSend(e);
                 }
               }}
