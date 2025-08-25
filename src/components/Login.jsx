@@ -9,7 +9,8 @@ const Login = () => {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({ username: "", password: "" }); // sparar vad användaren skriver i formuläret
+
+  const [formData, setFormData] = useState({ username: "", password: "" });
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -22,13 +23,11 @@ const Login = () => {
     setSubmitting(true);
 
     try {
-      // 1) logga in mot API
       const data = await loginUser({
-        username: formData.username.trim(),
+        username: formData.username,
         password: formData.password,
       });
 
-      // 2) API returnerar token → decoda
       const decoded = jwtDecode(data.token);
 
       console.log("Login - decoded token:", decoded);
@@ -45,14 +44,32 @@ const Login = () => {
       console.log("Login- localStorage:", authData);
 
       toast.success("Login successful!");
-      setTimeout(() => navigate("/Chat"), 1000);
+
+      console.log("✅ Login response:", data);
+
+      setFormData({ username: "", password: "" });
+
+      setTimeout(() => {
+        toast.success(
+          `Welcome to Buzz${
+            authData.username ? ", " + authData.username : ""
+          }!`,
+          {
+            style: {
+              backgroundColor: "#FCD12A",
+              color: "rgb(0, 0, 0)",
+            },
+          }
+        );
+        navigate("/Chat");
+      }, 1000);
+
+      return data;
     } catch (err) {
-      const msg =
-        err?.message === "Invalid credentials"
-          ? "Invalid credentials"
-          : err?.message || "Login failed.";
+      const msg = err?.message || "Invalid credentials";
       setError(msg);
       toast.error(msg);
+      console.error("❌ Sign in:", err);
     } finally {
       setSubmitting(false);
     }

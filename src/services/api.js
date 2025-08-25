@@ -22,8 +22,6 @@ export async function getCsrfToken() {
   return data.csrfToken;
 }
 
-/* ====================== AUTH ====================== */
-
 // Registrera user
 export async function registerUser({ username, password, email }) {
   const csrf = await getCsrfToken();
@@ -70,18 +68,30 @@ export async function loginUser({ username, password }) {
     },
     body: JSON.stringify({ username, password, csrfToken: csrf }),
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.message || "Invalid credentials");
-  // ✅ hämta även user-info direkt
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    data = {};
+  }
+  if (!res.ok) {
+    const msg = data?.error || data?.message || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+
   const meRes = await fetch(`${BASE_URL}/users/${data.id}`, {
     headers: { Authorization: `Bearer ${data.token}` },
     credentials: "include",
   });
-  const me = await meRes.json().catch(() => ({}));
+  let me;
+  try {
+    me = await meRes.json();
+  } catch (err) {
+    me = {};
+  }
 
-  // returnera token + user-info
   return {
-    ...data, // { token, id }
+    ...data,
     username: me.username,
   };
 }
@@ -90,9 +100,6 @@ console.log(
   JSON.parse(localStorage.getItem("auth"))
 );
 
-/* ==================== MESSAGES ==================== */
-
-// 4) Hämta meddelanden (valfritt conversationId)
 export async function fetchMessages() {
   const token = getToken();
   if (!token) throw new Error("Inte inloggad");

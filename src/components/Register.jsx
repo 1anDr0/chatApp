@@ -24,10 +24,9 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSubmitting(true);
 
     try {
-      setSubmitting(true);
-
       const data = await registerUser({
         username: formData.username,
         email: formData.email,
@@ -35,7 +34,9 @@ const Register = () => {
       });
 
       toast.success("Registration successful!");
+
       console.log("✅ Registration response:", data);
+
       setFormData({ username: "", email: "", password: "" });
 
       setTimeout(() => navigate("/Login"), 1000);
